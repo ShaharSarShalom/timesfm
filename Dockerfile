@@ -51,7 +51,19 @@ RUN apt-get update && \
 # Upgrade pip
 RUN python3 -m pip install --upgrade pip
 
-RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
+
+WORKDIR /
+# Copy the requirements.txt file into the Docker image
+COPY requirements.txt /
+#COPY requirements.txt .
+
+
+RUN pip install --no-cache-dir --ignore-installed \
+    --force-reinstall -v -r requirements.txt \
+    --index-url https://download.pytorch.org/whl/cu126 \
+    --extra-index-url https://pypi.org/simple
+
+# RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu126
 
 # Verify the installation of torch, torchvision, and torchaudio
 RUN python3 -c "import torch; print('torch version:', torch.__version__)"

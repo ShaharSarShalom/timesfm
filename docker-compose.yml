@@ -1,0 +1,110 @@
+version: "3.9"
+services:
+  timefs:
+    # remove the build section on deployment
+    build:
+      context: . # ../../..
+      dockerfile: Dockerfile
+      # dockerfile: docker/Dockerfile
+    container_name: timefs
+    # use on deployment
+    image: timefs:latest
+    privileged: true
+    # args:
+    #   - WS_DIR:"/ros2_ws"
+    environment:
+    # mount the configuration file
+      - ROS_DOMAIN_ID=42
+      - ROS2_WS="/ros2_ws"
+      - WS_DIR="/ros2_ws"
+      - PERCEPTION_CONFIG=${PERCEPTION_CONFIG}
+      - PERCEPTION_DATASET=${PERCEPTION_DATASET}
+      - PERCEPTION_WEIGHTS=${PERCEPTION_WEIGHTS}
+      - XDG_RUNTIME_DIR=/tmp/runtime-root
+      - DISPLAY:${DISPLAY}
+      - QT_X11_NO_MITSHM=1
+      - UID=${UID:-1000} # Set a default value if UID is not set
+      - GID=${GID:-1000} # Set a default value if GID is not set
+    network_mode: "host"
+    ipc: "host"
+    pid: "host"
+    tty: true
+    ########## use for bash based docker ###########
+    command: "bash -c \"source /opt/ros/humble/setup.sh &&
+              source /ros2_ws/install/setup.bash &&
+              tail -f /dev/null\""
+    ########## use for bash based docker ###########
+
+    ########## use for the recording system ###########
+    # command: "bash -c \"source /opt/ros/humble/setup.sh &&
+    #             source /ros2_ws/install/setup.bash &&
+    #             ros2 launch timefs timefs.launch.py params_file:=/timefs_config/sensor_params_exsight_day_night_velodyne.yaml &&
+    #             tail -f /dev/null\""
+    ########## use for the recording system ###########
+
+    ########## use for the velo2cam calibration process ###########
+    # command: "bash -c \"source /opt/ros/humble/setup.sh &&
+    #            source /ros2_ws/install/setup.bash &&
+    #            ros2 launch velo2cam_calibration velo2cam_calibration.launch.py params_file:=/velo2cam_calibration_config/velo2cam_calib_sensor_params.yaml &&
+    #            tail -f /dev/null\""
+    ########## use for the velo2cam calibration process ###########
+
+    # command: "bash -c \"source /opt/ros/humble/setup.sh &&
+    #            source /ros2_ws/install/setup.bash &&
+    #            ros2 launch timefs timefs.launch.py config_path:=/config/sensor_params_cam.yaml &&
+    #            tail -f /dev/null\""
+
+    # command: "bash -c \"source /opt/ros/humble/setup.sh && \
+    #   source /ros2_ws/install/setup.bash && \
+    #   ros2 launch timefs timefs.launch.py \
+    #         src_channels_list:='[(vis0,rtsp://admin:BAYPMX@172.16.79.250),(vis1,rtsp://admin:BAYPMX@172.16.79.250)]' && \
+    #    tail -f /dev/null\""
+    volumes:
+    # mount the configuration folder
+      - ${PERCEPTION_CONFIG}:${PERCEPTION_CONFIG}
+      - ${PERCEPTION_DATASET}:${PERCEPTION_DATASET}
+      - ${PERCEPTION_WEIGHTS}:${PERCEPTION_WEIGHTS}
+      - /dev/shm:/dev/shm
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - $HOME/.Xauthority:/root/.Xauthority
+      - /tmp:/tmp
+      - ${HOME}/.ros/log:/root/.ros/log
+    # mount these for ros2, the tmp is where the bag files are saved, the ros2 log folder should be mapped as well.
+    # - /home/robo01/Documents/bag_files:/tmp/bag_files
+    # command: /bin/sh -c "xhost +local:root"
+  test:
+    image: timefs:latest
+    depends_on:
+      - timefs
+    command: "bash -c \"tail -f /dev/null\""
+    # entrypoint: [
+    #   "bash", "-c", 
+    #   "source /opt/ros/$ROS_DISTRO/setup.sh && \
+    #   source /ros2_ws/install/setup.sh && \
+    #   colcon test --event-handlers console_cohesion+ --packages-select timefs && \
+    #   colcon test-result --verbose && \
+    #   python3 -m pytest --verbose --capture=tee-sys $(python3 -c 'import robotics_utils.pc2image_fusion.tests as tests; print(tests.__path__[0])')"
+    # ]
+    
+    # entrypoint: [
+    #   "bash", "-c", 
+      # "source /opt/ros/humble/setup.sh &&
+      #           source /ros2_ws/install/setup.bash &&
+      #           colcon test --packages-select 
+      #           timefs 
+      #           velo2cam_calibration --event-handlers console_cohesion+ 
+      #           --pytest-args 
+      #           \"-s -v --tb=long\" --executor sequential | tee ${ROS_LOG_DIR:-~/.ros/log}/pytest_output.txt && 
+      #           colcon test-result --verbose | tee -a ${ROS_LOG_DIR:-~/.ros/log}/pytest_output.txt"
+    # ]
+    # entrypoint: [
+    #   "bash, "-c", "tail -f /dev/null\"
+    # ]
+    # entrypoint: [
+    #   "bash -c \" \
+    #   source /opt/ros/$ROS_DISTRO/setup.sh && \
+    #   source ${WS_DIR}/install/setup.sh && \
+    #   colcon test --event-handlers console_cohesion+ --packages-select timefs && \
+    #   colcon test-result --verbose && \
+    #   python3 -m pytest --verbose --capture=tee-sys $(python3 -c 'import robotics_utils.pc2image_fusion.tests as tests; print(tests.__path__[0])')""
+    # ]

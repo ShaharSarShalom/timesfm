@@ -1,0 +1,25 @@
+version: "3.95"
+services:
+  timefs:
+    extends:
+      file: docker-compose.yml
+      service: timefs
+    environment:
+     - DISPLAY=${DISPLAY}
+     - QT_X11_NO_MITSHM=1
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+      - /tmp/.docker.xauth:/tmp/.docker.xauth:rw
+      # - /home/shahar/Documents/Dataset/:/dataset
+    # build:
+    #   context: ..
+    #   dockerfile: Dockerfile
+    # command: /usr/local/bin/setup_ros.sh && tail -f /dev/null 
+    # command: "bash -c \"tail -f /dev/null\""
+    # tail -f /dev/null && source ros_setup.sh && ros2 launch velodyne velodyne-all-nodes-VLP16-launch.py && rviz2
+    # command: source ros_setup.sh && ros2 launch velodyne velodyne-all-nodes-VLP16-launch.py && rviz2 && tail -f /dev/null
+# && ros2 launch velodyne velodyne-all-nodes-VLP16-launch.py && rviz2
+
+
+# RUN BASE DOCKER 
+# clear && systemctl start docker && cd /run/media/user/perception/config/docker && xhost +local:root && sudo docker compose -f docker-compose-gui.yml up 

@@ -1,0 +1,22 @@
+version: "3.95"
+services:
+  timefs:
+    extends:
+      file: docker-compose-gui-nvidia.yml
+      service: timefs
+    # use this to specify docker building stages
+    # build:
+    #   target: step_04_after_ros2_algo_infrustructure
+    command: "bash -c \"/usr/sbin/sshd -D &
+            tail -f /dev/null\""
+    # command: "bash -c \"/usr/sbin/sshd -D & source /opt/ros/humble/setup.sh &&
+    #             source /ros2_ws/install/setup.bash &&
+    #             tail -f /dev/null\""
+    environment:
+      - PERCEPTION_CODE=${PERCEPTION_CODE}
+
+    volumes:
+    # mount the configuration folder
+      # - ${PERCEPTION_CODE}:${PERCEPTION_CODE}
+      # Use for Shahar pc 
+      - ${PERCEPTION_CODE}:/perception_code

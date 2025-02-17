@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  timefs:
+    extends:
+      file: docker-compose.yml
+      service: timefs
+    environment:
+     - NVIDIA_VISIBLE_DEVICES=all
+    runtime: nvidia
